@@ -1,0 +1,42 @@
+{% extends 'layouts/box.html' %}
+{% load i18n %}
+{% load allauth account %}
+
+{% block head_title %}
+    {% trans "Sign Up" %}
+{% endblock head_title %}
+
+{% block content %}
+    <div class="container">
+        {% element h1 %}
+            {% trans "Sign Up" %}
+        {% endelement %}
+        <p>
+            {% trans "Already have an account?" %}
+            <a href="{% url 'account_login' %}?next={% url 'profile-onboarding' %}" class="btn btn-link">{% trans "Sign In" %}</a>
+        </p>
+        {% url 'account_signup' as signup_url %}
+        {% element form method="post" action=signup_url %}
+        {% slot body %}
+            {% csrf_token %}
+            {% element fields form=form unlabeled=True %}
+            {% endelement %}
+            {% if redirect_field_value %}
+                <input type="hidden"
+                       name="{{ redirect_field_name }}"
+                       value="{{ redirect_field_value }}" />
+            {% endif %}
+        {% endslot %}   
+        {% slot actions %}
+            {% element button type="submit" tags="prominent,login" %}
+                {% trans "Sign In" %}
+            {% endelement %}
+        {% endslot %}
+    {% endelement %}
+        {% if SOCIALACCOUNT_ENABLED %}
+            <div class="social-login mt-4">
+                {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
