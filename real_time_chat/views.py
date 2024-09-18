@@ -1,5 +1,6 @@
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from .models import *
 from .forms import *
 
@@ -10,15 +11,18 @@ def chat_view(request,chatroom_name="Public-Chat"):
 
     other_user = None
     if chat_group.is_private:
-        for memebor in chat_group.members.all():
-            if memebor != other_user:
-                other_user = memebor
+        if request.user not in chat_group.members.all():
+            raise Http404()
+
+        for member in chat_group.members.all():
+            if member != request.user:
+                other_user = member
                 break
 
-    form = ChatMessageCreateForm()
+    form = ChatmessageCreateForm()
 
     if request.htmx:
-        form = ChatMessageCreateForm(request.POST)
+        form = ChatmessageCreateForm(request.POST)
         if form.is_valid():
             message = form.save(commit=False)
             message.author = request.user
@@ -62,3 +66,6 @@ def get_or_create_chat(request,username):
         chatroom.members.add(other_user,request.user)
 
     return redirect("chatroom",chatroom.group_name)
+
+def create_new_group_chat(request):
+    return render(request,'real_time_chat/create_groupchat.html')
